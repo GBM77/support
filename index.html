@@ -1,0 +1,122 @@
+<!DOCTYPE html>
+<html lang="zh-Hant"><head><meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
+<title>晉級的距人｜拔尖扶弱小組助手</title>
+<style>
+:root{--bg:#f4f6fb;--c:#fff;--t:#1d2433;--m:#667085;--p:#3b6cf4;--ok:#16a34a;--bad:#dc2626;--b:#e2e8f0}
+body.dark{--bg:#10141c;--c:#1a2030;--t:#e8ecf5;--m:#9aa5b8;--b:#2a3347}
+*{box-sizing:border-box}html{font-size:16px}
+body{margin:0;background:var(--bg);color:var(--t);font-family:system-ui,"Noto Sans TC","PingFang TC","Microsoft JhengHei",sans-serif;line-height:1.55;padding-bottom:5rem}
+#app{margin:0 auto;padding:.8rem;max-width:480px}
+body.tablet #app{max-width:820px}body.laptop #app{max-width:1200px}
+body.tablet #main,body.laptop #main{display:grid;grid-template-columns:repeat(auto-fit,minmax(min(100%,340px),1fr));gap:.8rem;align-items:start}
+.card{background:var(--c);border:1px solid var(--b);border-radius:14px;padding:.9rem;margin-bottom:.8rem}
+body.tablet .card,body.laptop .card{margin:0}
+h1{font-size:1.3rem;margin:.2rem 0 .8rem}h2{font-size:1.1rem;margin:0 0 .5rem}h3{font-size:1rem;margin:0 0 .5rem}
+.m{color:var(--m);font-size:.85rem}
+input,select,textarea,button{font:inherit;color:var(--t);background:var(--bg);border:1px solid var(--b);border-radius:10px;padding:.5rem .65rem;max-width:100%}
+textarea{width:100%;min-height:7rem}input[type=text],input[type=date],input[type=number],select{width:100%;margin:.2rem 0 .5rem}
+input[type=checkbox]{width:1.2rem;height:1.2rem;vertical-align:middle}
+button{cursor:pointer;background:var(--p);color:#fff;border:0;font-weight:600}button.g{background:var(--bg);color:var(--t);border:1px solid var(--b)}button.r{background:var(--bad)}
+button.on{outline:3px solid var(--p);outline-offset:1px}
+.chip{display:inline-block;background:var(--bg);border:1px solid var(--b);border-radius:99px;padding:.1rem .6rem;margin:.15rem;font-size:.85rem}
+.sc{overflow-x:auto}table{border-collapse:collapse;width:100%;font-size:.9rem}th,td{padding:.35rem .4rem;border-bottom:1px solid var(--b);text-align:left;white-space:nowrap}
+a.btn{display:inline-block;background:var(--p);color:#fff;text-decoration:none;border-radius:10px;padding:.4rem .7rem;margin:.15rem;font-size:.9rem}a.btn.g{background:var(--bg);color:var(--t);border:1px solid var(--b)}
+nav{position:fixed;bottom:0;left:0;right:0;background:var(--c);border-top:1px solid var(--b);display:flex;justify-content:center;gap:.2rem;padding:.4rem .4rem calc(.4rem + env(safe-area-inset-bottom,0px));overflow-x:auto}
+nav button{background:transparent;color:var(--m);padding:.4rem .7rem;border-radius:10px;white-space:nowrap}nav button.on{background:var(--p);color:#fff;outline:0}
+.ok{color:var(--ok)}.bad{color:var(--bad)}.row{display:flex;gap:.5rem;flex-wrap:wrap;align-items:center}
+</style></head><body>
+<div id="app"><h1>🚀 晉級的距人・拔尖扶弱小組助手</h1><div id="main"></div></div>
+<nav id="nav"></nav>
+<script>
+const K='jinji-v1';
+const D={set:{fs:16,lay:'phone',dark:false,role:'teacher',g:1,pin:'',r1:500,r2:300,r3:200,mvp:200,l1:5,l2:3,l3:2,fine:200},r:[],ex:[],sess:[],q:[],fl:[],sv:[]};
+let S;try{S=JSON.parse(localStorage.getItem(K))}catch(e){}
+S=Object.assign({},D,S||{});S.set=Object.assign({},D.set,S.set);
+const T={home:'📊總覽',grp:'👥分組',sess:'📝學習會',qa:'🙋互助板',exam:'📈成績',disc:'📵紀律',ev:'📋評估',res:'📚資源',set:'⚙️設定'};
+const RT={teacher:['home','grp','exam','disc','ev','res','set'],leader:['home','sess','qa','disc','ev','res','set'],member:['home','qa','ev','res','set']};
+const RN={teacher:'導師',leader:'組長',member:'組員'};
+let tab='home';
+const $=s=>document.querySelector(s),uid=()=>Math.random().toString(36).slice(2,8),today=()=>new Date().toISOString().slice(0,10);
+const esc=s=>String(s).replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
+function save(){try{localStorage.setItem(K,JSON.stringify(S))}catch(e){}}
+const ng=()=>Math.max(0,...S.r.map(p=>p.g||0)),mem=g=>S.r.filter(p=>p.g==g),nm=id=>(S.r.find(x=>x.id==id)||{n:'?'}).n;
+const opts=(n,v)=>Array.from({length:n},(_,i)=>`<option value=${i+1} ${v==i+1?'selected':''}>第${i+1}組</option>`).join('');
+const pOpts=g=>mem(g).map(p=>`<option value=${p.id}>${esc(p.n)}</option>`).join('');
+function copy(t){(navigator.clipboard?navigator.clipboard.writeText(t):Promise.reject()).then(()=>alert('已複製 ✅'),()=>prompt('請手動複製',t))}
+function parse(t){return t.split(/\n/).map(l=>l.trim().split(/[,\t，\s]+/)).filter(x=>x[0]&&x[1]&&!isNaN(+x[1]))}
+function rankMap(sc){const a=Object.entries(sc).sort((x,y)=>y[1]-x[1]),N=a.length,o={};a.forEach(([id,v],i)=>{const r=i>0&&a[i-1][1]===v?o[a[i-1][0]].rank:i+1;o[id]={rank:r,pct:N>1?(N-r)/(N-1)*100:100}});return o}
+function calc(){const E=S.ex;if(E.length<2)return null;const a=rankMap(E[E.length-2].sc),b=rankMap(E[E.length-1].sc),ind={},grp={};
+ S.r.forEach(p=>{if(a[p.id]&&b[p.id])ind[p.id]=a[p.id].rank-b[p.id].rank});
+ for(let g=1;g<=ng();g++){const all=mem(g);if(!all.length)continue;const sum=all.reduce((s,p)=>s+(ind[p.id]||0),0);grp[g]={sum,n:all.length,tot:sum/all.length}}
+ return{ind,grp}}
+function rankTable(c){const a=Object.entries(c.grp).sort((x,y)=>y[1].tot-x[1].tot),n=a.length,s=S.set,ia=Object.entries(c.ind).sort((x,y)=>y[1]-x[1]),m=ia.length,pen=[s.l1,s.l2,s.l3];
+ let h=`<div class=card><h3>🏆 最新一次組別排名</h3><p class=m>依「總進步值÷組員數」排名（進步值＝上次名次－本次名次）</p><div class=sc><table><tr><th>名次<th>組別<th>總進步<th>人數<th>平均<th>獎懲</tr>`;
+ a.forEach(([g,v],i)=>{const e=n-1-i;let note=i<3?'💰$'+[s.r1,s.r2,s.r3][i]:(e<3?'🧹勞動服務'+pen[e]+'次':'');
+  h+=`<tr><td>${i+1}<td>第${g}組<td>${v.sum}<td>${v.n}<td><b>${v.tot.toFixed(2)}</b><td>${note}</tr>`});
+ h+=`</table></div>`;
+ if(m){h+=`<p>🐴 終極黑馬 MVP：<b>${esc(nm(ia[0][0]))}</b>（進步 +${ia[0][1]}）💰$${s.mvp}</p><p><b>個人倒數三名（勞動服務）</b></p>`;
+  ia.slice(-3).reverse().forEach(([id,v],k)=>{if(ia.length-1-k>0)h+=`<p>${['最後一名','倒數第二','倒數第三'][k]}：${esc(nm(id))}（${v}）🧹${pen[k]}次</p>`})}
+ return h+`</div>`}
+function vHome(){const G=ng(),c=calc();let h=`<div class=card><h2>👋 ${RN[S.set.role]}工作台</h2><p class=m>${S.r.length?`共 ${S.r.length} 人・${G} 組`:'尚未建立分組：請導師到「分組」貼上名單並一鍵分組。'}</p></div>`;
+ if(!G)return h;
+ if(S.set.role!='teacher')h+=`<div class=card><h3>我的小組</h3><select onchange="S.set.g=+this.value;save();render()">${opts(G,S.set.g)}</select>${mem(S.set.g).map(p=>`<span class=chip>級距${p.t}｜${p.L?'👑':''}${esc(p.n)}</span>`).join('')}</div>`;
+ if(S.set.role=='leader')h+=`<div class=card><h3>✅ 組長本週清單</h3><p>① 召開學習會並到「學習會」記錄<br>② 到「互助板」確認未解決問題<br>③ 指派小老師、回報導師<br>④ 發現玩手機/作弊→到「紀律」舉報</p></div>`;
+ return h+(c?rankTable(c):'<div class=card><p class=m>輸入兩次以上段考成績，這裡會自動顯示進步排名與獎懲。</p></div>')}
+function vGrp(){let h=`<div class=card><h3>1️⃣ 貼上名單與基準成績</h3><p class=m>每行：姓名,分數。依成績分7個級距，每組6~7人，各級距盡量每組至少一位。</p><textarea id=ro placeholder="王小明,92&#10;李小華,85"></textarea><h3>2️⃣ 手動預排（選填）</h3><p class=m>每行：組別:姓名,姓名(長)　(長)＝組長。其餘由系統按公平原則分配。</p><textarea id=pre style="min-height:4rem" placeholder="1:王小明(長),李小華&#10;2:陳大明(長)"></textarea><button onclick="build($('#ro').value,$('#pre').value)">🎲 一鍵分組</button></div>`;
+ for(let g=1;g<=ng();g++)h+=`<div class=card><h3>第${g}組（${mem(g).length}人）</h3>${mem(g).map(p=>`<div class=row><span class=chip>級距${p.t}</span><span style="flex:1">${p.L?'👑 ':''}${esc(p.n)}</span><button class=g onclick="lead('${p.id}')">👑</button><select style="width:auto" onchange="mv('${p.id}',this.value)">${opts(ng(),g)}</select></div>`).join('')}</div>`;return h}
+function build(t,pre){const L=parse(t);if(L.length<7)return alert('至少需要7位，格式：姓名,分數');if(S.r.length&&!confirm('將覆蓋現有分組與紀錄，確定？'))return;
+ const r=L.map(x=>({id:uid(),n:x[0],s:+x[1]})).sort((a,b)=>b.s-a.s),N=r.length;let G=Math.max(1,Math.round(N/6.5));
+ r.forEach((p,i)=>p.t=Math.floor(i*7/N)+1);
+ (pre||'').split(/\n/).forEach(l=>{const m=l.match(/^\s*(\d+)\s*[:：]\s*(.+)$/);if(!m)return;const g=+m[1];G=Math.max(G,g);m[2].split(/[,，、\s]+/).forEach(w=>{const ld=/[（(]長[）)]/.test(w),n=w.replace(/[（(]長[）)]/,''),p=r.find(p=>p.n==n&&!p.g);if(p){p.g=g;if(ld)p.L=1}})});
+ const cap=Math.ceil(N/G),sz=Array(G+1).fill(0),tc=Array.from({length:G+1},()=>Array(8).fill(0));
+ r.filter(p=>p.g).forEach(p=>{sz[p.g]++;tc[p.g][p.t]++});
+ for(let t=1;t<=7;t++)r.filter(p=>!p.g&&p.t==t).sort(()=>Math.random()-.5).forEach(p=>{let b=0,bk=null;
+  for(let g=1;g<=G;g++){if(sz[g]>=cap)continue;const k=[tc[g][t],sz[g],Math.random()];if(!bk||k[0]<bk[0]||(k[0]==bk[0]&&(k[1]<bk[1]||(k[1]==bk[1]&&k[2]<bk[2])))){bk=k;b=g}}
+  if(!b)b=1;p.g=b;sz[b]++;tc[b][t]++});
+ S.r=r;S.ex=[{n:'基準',sc:Object.fromEntries(r.map(p=>[p.id,p.s]))}];S.sess=[];S.q=[];S.fl=[];save();render()}
+function mv(id,g){S.r.find(p=>p.id==id).g=+g;save();render()}
+function lead(id){const p=S.r.find(x=>x.id==id);mem(p.g).forEach(x=>x.L=0);p.L=1;save();render()}
+function vExam(){let h=`<div class=card><h3>新增一次段考成績</h3><input type=text id=en placeholder="例：第一次段考"><textarea id=es placeholder="王小明,90"></textarea><button onclick="addEx()">➕ 加入並計算</button><p class=m>姓名需與名單一致。至少兩次（含基準）才會算進步。</p></div><div class=card><h3>已有成績</h3>${S.ex.map((e,i)=>`<div class=row><span style="flex:1">${esc(e.n)}（${Object.keys(e.sc).length}人）</span>${i?`<button class="g" onclick="S.ex.splice(${i},1);save();render()">刪除</button>`:''}</div>`).join('')||'<p class=m>尚無</p>'}</div>`;
+ const c=calc();if(c){h+=rankTable(c);h+=`<div class=card><h3>個人進步榜（名次進步）</h3><div class=sc><table>${Object.entries(c.ind).sort((a,b)=>b[1]-a[1]).map(([id,v],i)=>`<tr><td>${i+1}<td>${esc(nm(id))}<td class="${v>=0?'ok':'bad'}">${v>=0?'+':''}${v}</tr>`).join('')}</table></div></div>`}return h}
+function addEx(){const n=$('#en').value.trim()||'段考'+S.ex.length,L=parse($('#es').value),sc={};let miss=[];
+ L.forEach(x=>{const p=S.r.find(p=>p.n==x[0]);p?sc[p.id]=+x[1]:miss.push(x[0])});if(!Object.keys(sc).length)return alert('沒有符合名單的姓名');
+ if(miss.length)alert('找不到：'+miss.join('、'));S.ex.push({n,sc});save();render()}
+function vSess(){const G=ng(),g=S.set.g;if(!G)return'<div class=card>請導師先建立分組</div>';
+ let h=`<div class=card><h3>📝 記錄本週學習會</h3><select onchange="S.set.g=+this.value;save();render()">${opts(G,g)}</select><input type=date id=sd value="${today()}"><input type=text id=ssub placeholder="科目/主題（例：地科-板塊構造）"><p>出席：</p>${mem(g).map(p=>`<label style="display:block"><input type=checkbox class=at value=${p.id} checked> ${esc(p.n)}</label>`).join('')}<textarea id=snote placeholder="重點、誰教誰、心得、下週目標"></textarea><button onclick="saveS()">💾 儲存</button> <button class=g onclick="rpt()">📋 複製週報(貼LINE)</button></div>`;
+ return h+`<div class=card><h3>歷次紀錄</h3>${S.sess.filter(x=>x.g==g).reverse().map(x=>`<p><b>${x.d}</b> ${esc(x.sub)}｜出席 ${x.att.length}/${mem(g).length}<br><span class=m>${esc(x.note)}</span></p>`).join('')||'<p class=m>尚無</p>'}</div>`}
+function saveS(){const g=S.set.g;S.sess.push({id:uid(),g,d:$('#sd').value,sub:$('#ssub').value,att:[...document.querySelectorAll('.at:checked')].map(e=>e.value),note:$('#snote').value});save();render()}
+function rpt(){const g=S.set.g,x=S.sess.filter(s=>s.g==g).pop(),q=S.q.filter(q=>q.g==g&&!q.done);
+ copy(`【第${g}組週報】${x?x.d+' '+x.sub+' 出席'+x.att.length+'/'+mem(g).length:'本週尚未記錄'}\n未解決問題 ${q.length} 題${q.map(a=>'\n・'+a.sub+'：'+a.txt).join('')}`)}
+function vQa(){const G=ng(),g=S.set.g;if(!G)return'<div class=card>請導師先建立分組</div>';
+ return`<div class=card><h3>🙋 發問 / 求助</h3><select onchange="S.set.g=+this.value;save();render()">${opts(G,g)}</select><select id=qw>${pOpts(g)}</select><input type=text id=qs placeholder="科目"><textarea id=qt placeholder="我卡住的地方…"></textarea><button onclick="addQ()">送出</button></div>`+
+ S.q.filter(q=>q.g==g).reverse().map(q=>`<div class=card><b>${esc(q.sub)}</b>｜${esc(nm(q.by))} 問<br>${esc(q.txt)}<br><span class=m>建議小老師：${esc(nm(q.h))}</span><br><button class="${q.done?'g':''}" onclick="tq('${q.id}')">${q.done?'↩️ 重開':'✅ 已解決'}</button> <button class="g" onclick="S.q=S.q.filter(x=>x.id!='${q.id}');save();render()">刪除</button></div>`).join('')}
+function addQ(){const g=S.set.g,by=$('#qw').value,h=mem(g).filter(p=>p.id!=by).sort((a,b)=>a.t-b.t)[0];if(!$('#qt').value.trim())return;S.q.push({id:uid(),g,by,sub:$('#qs').value||'未分類',txt:$('#qt').value,h:h?h.id:by,done:false});save();render()}
+function tq(id){const q=S.q.find(x=>x.id==id);q.done=!q.done;save();render()}
+function vDisc(){const cnt={},f=+S.set.fine;S.fl.forEach(x=>{if(x.t=='手機')cnt[x.who]=(cnt[x.who]||0)+1});let fund=0;
+ const ln=Object.entries(cnt).map(([id,n])=>{const fee=Math.max(0,n-2)*f;fund+=fee;return`<p>${esc(nm(id))}：${n} 次${n>=3?` <span class=bad>⚠️第3次起每次罰款，累計 $${fee}</span>`:n==2?` <span class=bad>⚠️再犯一次即開始罰款 $${f}</span>`:''}</p>`}).join('');
+ return`<div class=card><h3>📵 害群之馬特別條款</h3><p class=m>課堂玩手機經組長舉報或老師當場查獲累計2次，第3次起每次罰款 $${f}，作為獎勵基金（掃地時間未認真打掃、玩手機也計算）。段考前2週下課、掃地、午休只能討論功課和休息，嚴禁玩手機。作弊者須歸還10倍獎學金＋勞動服務10天。</p><select id=fw>${S.r.map(p=>`<option value=${p.id}>第${p.g}組 ${esc(p.n)}</option>`).join('')}</select><select id=ft><option>玩手機（組長舉報）</option><option>玩手機（老師查獲）</option><option>作弊</option></select><input type=date id=fd value="${today()}"><button onclick="S.fl.push({id:uid(),who:$('#fw').value,t:$('#ft').value.startsWith('作弊')?'作弊':'手機',d:$('#fd').value});save();render()">記錄</button></div>
+ <div class=card><h3>累計狀況</h3>${ln||'<p class=m>尚無</p>'}<p>🏦 獎勵基金累計：<b>$${fund}</b></p>${S.fl.filter(x=>x.t=='作弊').map(x=>`<p class=bad>⛔ ${esc(nm(x.who))} 作弊（${x.d}）：須歸還10倍獎學金＋勞動服務10天</p>`).join('')}</div>
+ <div class=card><h3>近期紀錄</h3>${S.fl.slice().reverse().slice(0,15).map(x=>`<div class=row><span style="flex:1">${x.d} ${esc(nm(x.who))}・${x.t}</span><button class=g onclick="S.fl=S.fl.filter(y=>y.id!='${x.id}');save();render()">刪</button></div>`).join('')}</div>`}
+const QS=['整體滿意度','學習會對我的幫助','獎懲制度的公平性','希望下學期繼續'];
+function vEv(){let h=`<div class=card><h3>📋 計畫滿意度調查表</h3><p class=m>學期末填寫，作為下學期改進參考（5＝非常同意，1＝非常不同意）。</p>${QS.map(q=>`<label class=m>${q}</label><select class=sv>${[5,4,3,2,1].map(v=>`<option>${v}</option>`).join('')}</select>`).join('')}<textarea id=svt placeholder="看法與建議"></textarea><button onclick="S.sv.push({id:uid(),role:S.set.role,g:S.set.g,a:[...document.querySelectorAll('.sv')].map(e=>+e.value),txt:$('#svt').value});save();render()">送出</button></div>`;
+ if(S.set.role=='teacher'){const n=S.sv.length,av=QS.map((q,i)=>n?(S.sv.reduce((s,x)=>s+(x.a[i]||0),0)/n).toFixed(2):'-');
+  h+=`<div class=card><h3>📊 期末評估（導師）</h3><p>回收 ${n} 份</p>${QS.map((q,i)=>`<p>${q}：<b>${av[i]}</b></p>`).join('')}${S.sv.filter(x=>x.txt).map(x=>`<p class=m>${RN[x.role]}（第${x.g}組）：${esc(x.txt)}</p>`).join('')}<button onclick="rep()">📋 複製期末評估報告</button></div>`}return h}
+function rep(){const c=calc();let t='【期末計畫評估】';for(let g=1;g<=ng();g++)t+=`\n第${g}組：學習會${S.sess.filter(x=>x.g==g).length}次｜問題解決${S.q.filter(q=>q.g==g&&q.done).length}/${S.q.filter(q=>q.g==g).length}｜最新平均進步${c&&c.grp[g]?c.grp[g].tot.toFixed(2):'-'}`;
+ t+=`\n段考次數：${S.ex.length}｜違規紀錄：${S.fl.length}｜滿意度${QS.map((q,i)=>`\n${q}：${S.sv.length?(S.sv.reduce((s,x)=>s+(x.a[i]||0),0)/S.sv.length).toFixed(2):'-'}`).join('')}`;copy(t)}
+const SITES=[['均一教學網','junyiacademy.org','國中小到高中免費影片、練習、學習歷程'],['學習吧 LearnMode','learnmode.net','國高中各科教學影片與題庫'],['教育部因材網','adl.edu.tw','適性診斷、各科自學資源'],['PaGamO','pagamo.org','遊戲化題庫，可組隊競賽'],['可汗學院','khanacademy.org','數理經典課程（英文為主）'],['臺大開放式課程','ocw.aca.ntu.edu.tw','大學先修、探究延伸'],['大考中心','ceec.edu.tw','學測/分科歷屆試題'],['教育雲','cloud.edu.tw','教育部數位學習資源入口']];
+function vRes(){return`<div class=card><h3>🔎 一鍵查資源</h3><input type=text id=rq placeholder="輸入單元/關鍵字，例：板塊構造、二次函數"><div class=row><button onclick="go('www.google.com/search?q=site:'+SITES[0][1]+'+')">均一</button><button onclick="go('www.google.com/search?q=site:'+SITES[1][1]+'+')">學習吧</button><button onclick="go('www.google.com/search?q=site:'+SITES[2][1]+'+')">因材網</button><button onclick="go('www.youtube.com/results?search_query=')">YouTube</button></div><p class=m>以站內搜尋開啟，不需記網址。</p></div>`+SITES.map(s=>`<div class=card><b>${s[0]}</b><br><span class=m>${s[2]}</span><br><a class=btn href="https://${s[1]}" target=_blank rel=noopener>開啟官網</a><a class="btn g" href="#" onclick="go('www.google.com/search?q=site:${s[1]}+');return false">搜尋關鍵字</a></div>`).join('')+'<p class=m>連結若改版，請以各站官網為準。</p>'}
+function go(u){const q=encodeURIComponent($('#rq').value||'');window.open('https://'+u+q,'_blank','noopener')}
+function ni(k,l){return`<label class=m>${l}</label><input type=number value="${S.set[k]}" onchange="S.set.${k}=+this.value;save()">`}
+function vSet(){const s=S.set;return`<div class=card><h3>🔤 顯示</h3><label class=m>字體大小：<b>${s.fs}px</b></label><input type=range min=13 max=26 value=${s.fs} style="width:100%" oninput="S.set.fs=+this.value;save();applyUI()" onchange="render()"><div class=row>${[['phone','📱手機'],['tablet','📋平板'],['laptop','💻筆電']].map(x=>`<button class="${s.lay==x[0]?'on':'g'}" onclick="S.set.lay='${x[0]}';save();applyUI();render()">${x[1]}</button>`).join('')}<button class=g onclick="S.set.dark=!S.set.dark;save();applyUI()">🌓</button></div></div>
+ <div class=card><h3>👤 身分</h3><select onchange="setRole(this.value)">${Object.keys(RN).map(r=>`<option value=${r} ${s.role==r?'selected':''}>${RN[r]}</option>`).join('')}</select><label class=m>導師密碼（選填，輕度保護）</label><input type=text value="${esc(s.pin)}" onchange="S.set.pin=this.value;save()"></div>
+ <div class=card><h3>💰 獎懲參數（導師）</h3>${ni('r1','第1名獎金')}${ni('r2','第2名獎金')}${ni('r3','第3名獎金')}${ni('mvp','終極黑馬獎金')}${ni('l1','最後一名服務次數')}${ni('l2','倒數第二服務次數')}${ni('l3','倒數第三服務次數')}${ni('fine','玩手機第3次起每次罰款')}</div>
+ <div class=card><h3>🔄 資料同步</h3><p class=m>資料只存於本機瀏覽器。組長：複製回報碼傳給導師；導師：貼上合併。</p><div class=row><button onclick="copy(JSON.stringify({sess:S.sess.filter(x=>x.g==S.set.g),q:S.q.filter(x=>x.g==S.set.g),fl:S.fl.filter(f=>mem(S.set.g).some(p=>p.id==f.who)),sv:S.sv.filter(x=>x.g==S.set.g)}))">複製本組回報碼</button><button class=g onclick="copy(JSON.stringify(S))">複製全部備份</button></div><textarea id=mi placeholder="貼上回報碼或備份"></textarea><div class=row><button onclick="mergeIn()">合併回報碼</button><button class=g onclick="restore()">還原備份</button><button class=r onclick="if(confirm('清除全部資料？')){localStorage.removeItem(K);location.reload()}">清除</button></div></div>`}
+function setRole(r){if(r=='teacher'&&S.set.pin&&prompt('請輸入導師密碼')!=S.set.pin){render();return alert('密碼錯誤')}S.set.role=r;tab='home';save();render()}
+function mergeIn(){try{const d=JSON.parse($('#mi').value);['sess','q','fl','sv'].forEach(k=>(d[k]||[]).forEach(x=>{if(!S[k].some(y=>y.id==x.id))S[k].push(x)}));save();render();alert('合併完成')}catch(e){alert('格式錯誤')}}
+function restore(){try{const d=JSON.parse($('#mi').value);if(!d.set||!d.r)throw 0;S=d;save();location.reload()}catch(e){alert('不是有效備份')}}
+const V={home:vHome,grp:vGrp,sess:vSess,qa:vQa,exam:vExam,disc:vDisc,ev:vEv,res:vRes,set:vSet};
+function applyUI(){document.documentElement.style.fontSize=S.set.fs+'px';document.body.className=S.set.lay+(S.set.dark?' dark':'')}
+function render(){const ok=RT[S.set.role];if(!ok.includes(tab))tab='home';$('#nav').innerHTML=ok.map(t=>`<button class="${t==tab?'on':''}" onclick="tab='${t}';render();scrollTo(0,0)">${T[t]}</button>`).join('');$('#main').innerHTML=V[tab]();applyUI()}
+render();
+</script></body></html>
